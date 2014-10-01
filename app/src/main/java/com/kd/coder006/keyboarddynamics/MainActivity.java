@@ -14,23 +14,76 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.parse.Parse;
+import com.parse.ParseACL;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
+import com.parse.ParseInstallation;
 
 public class MainActivity extends Activity {
 
     Constants constant = new Constants();
+    Long pTime = 0L;
+    Long cTime = 0L;
+    Long[] timeDifferences = new Long[6];
+    String installationObjectId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Parse.initialize(this, "XVZ306n62GIo2SLIcuqbuN92DZPyK21jPssM8nWn",
+                "2uGzmMJxRLLQX1cl1J0zkF0Pt7CgNOO4VdHKXxef");
+        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        installation.saveInBackground();
+        //ParseUser.enableAutomaticUser();
+        ParseACL defaultACL = new ParseACL();
+        // If you would like all objects to be private by default, remove this line.
+        defaultACL.setPublicReadAccess(true);
+        defaultACL.setPublicWriteAccess(true);
+        ParseACL.setDefaultACL(defaultACL, true);
+
+        Log.v("installation_id: ", installation.getInstallationId());
+        installationObjectId = installation.getObjectId();
+
         final EditText edittext = (EditText) findViewById(R.id.editText);
         edittext.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 Log.v("KeyPressed: ", String.valueOf(keyCode));
                 if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                    String textValue = edittext.getText().toString();
-                    Log.v("EditTextValue: ", textValue);
+                    String textValue = edittext.getText().toString().toLowerCase();
+                    if(!textValue.equals(constant.TEST_WORD)){
+                        Log.v("editTextValue: ", textValue);
+                        CharSequence wrongSequenceToast = "Wrong Word. Please type the correct Word!";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(getApplicationContext(), wrongSequenceToast, duration);
+                        toast.setGravity(Gravity.TOP| Gravity.CENTER_HORIZONTAL, 0, 600);
+                        toast.show();
+                        edittext.setText("");
+                    }
+                    else{
+                        for(int i=0; i<6; i++){
+                            Log.v(String.valueOf(i) + ": ", String.valueOf(timeDifferences[i]));
+
+                        }
+                        ParseObject userClass = new ParseObject(installationObjectId);
+                        userClass.add("wo", timeDifferences[0]);
+                        userClass.add("ol", timeDifferences[1]);
+                        userClass.add("lf", timeDifferences[2]);
+                        userClass.add("fr", timeDifferences[3]);
+                        userClass.add("ra", timeDifferences[4]);
+                        userClass.add("am", timeDifferences[5]);
+
+                        userClass.saveInBackground();
+
+                        CharSequence wrongSequenceToast = "Trial complete!";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(getApplicationContext(), wrongSequenceToast, duration);
+                        toast.setGravity(Gravity.TOP| Gravity.CENTER_HORIZONTAL, 0, 600);
+                        toast.show();
+                        edittext.setText("");
+                    }
                 }
                 return true;
             }
@@ -38,8 +91,6 @@ public class MainActivity extends Activity {
 
         edittext.addTextChangedListener(new TextWatcher() {
             int cIndex = 0;
-            Long pTime = 0L;
-            Long cTime = 0L;
 
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -71,9 +122,11 @@ public class MainActivity extends Activity {
                     if(cIndex == 0){
                         pTime = System.currentTimeMillis();
                     }
-                    else if(cIndex >= 1){
+                    else if(cIndex >= 1 && cIndex <= 6){
                         cTime = System.currentTimeMillis();
-                        Long timeDiff = cTime - pTime;
+                        timeDifferences[cIndex-1] = cTime - pTime;
+                        Log.v("tDiff: ", String.valueOf(timeDifferences[cIndex-1]));
+                        pTime = cTime;
                     }
                 }
             }
