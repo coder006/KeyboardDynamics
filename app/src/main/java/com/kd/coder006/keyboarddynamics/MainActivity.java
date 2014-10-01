@@ -75,6 +75,8 @@ public class MainActivity extends Activity {
                         userClass.add("ra", timeDifferences[4]);
                         userClass.add("am", timeDifferences[5]);
 
+                        Log.v("timeDiffArray: ", timeDifferences.toString());
+
                         userClass.saveInBackground();
 
                         CharSequence wrongSequenceToast = "Trial complete!";
